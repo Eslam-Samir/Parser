@@ -1,0 +1,14 @@
+#parent {
+	-fx-background-color: #FFFFFF;
+}
+
+/* canvas background */
+.canvas {
+	-fx-border-color: #000000;
+	-fx-border-width: 2;
+}  
+
+/* canvas */
+#canvas { 
+	-fx-cursor: crosshair;
+} 

@@ -23,13 +23,14 @@ public class MainController {
 	
 	public void ScanFile(ActionEvent action) {
 		Stage stage = (Stage) scan.getScene().getWindow();
-		FileChooser fileChooser = new FileChooser();
+		/*FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Choose Tiny Input File");
 		File file = fileChooser.showOpenDialog(stage);
-		
+		*/
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new FileReader(file));
+			//reader = new BufferedReader(new FileReader(file)); TODO return after testing
+			reader = new BufferedReader(new FileReader("input.txt"));
 			String line = "";
 			TinyScanner scanner = new TinyScanner();
 			while((line = reader.readLine()) != null)
@@ -52,7 +53,7 @@ public class MainController {
 		Stage stage = (Stage) scan.getScene().getWindow();
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/Tree.fxml"));
         Parent root = loader.load();
-        Scene scene = new Scene(root, 400, 400);
+        Scene scene = new Scene(root);
 		stage.setScene(scene);
 		stage.show();
 	}
