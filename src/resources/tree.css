@@ -5,7 +5,7 @@
 /* canvas background */
 .canvas {
 	-fx-border-color: #000000;
-	-fx-border-width: 2;
+	-fx-border-width: 1;
 }  
 
 /* canvas */

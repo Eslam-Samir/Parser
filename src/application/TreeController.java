@@ -14,6 +14,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 
 public class TreeController implements Initializable{
 	
@@ -32,7 +34,6 @@ public class TreeController implements Initializable{
 		gc.setLineWidth(2);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setFont(new Font(18));
-        
         /* testing */
         ArrayList<TreeNode> nodes = new ArrayList<>();
         for (int i = 0; i < 7; i++)
@@ -43,8 +44,9 @@ public class TreeController implements Initializable{
         nodes.get(5).AddChild(new TreeNode("hi3"));
         nodes.get(5).AddChild(new TreeNode("hi3"));
         nodes.get(5).AddChild(new TreeNode("hi3"));
-        TreeNode node = new TreeNode("token", nodes); 
-		DrawTreeNode(gc, canvas.getWidth()/2, 10, node);
+        TreeNode root = new TreeNode("token", nodes); 
+		DrawTreeNode(gc, canvas.getWidth()/2, 10, root);
+		
 		canvasContainer.setHvalue(0.5);
 	}
 	
@@ -54,6 +56,9 @@ public class TreeController implements Initializable{
 		boolean isRoot = node.isRoot();
 		int childrenCount = node.getChildrenCount();
 		
+        gc.setFill(new Color(1, 1, 1, 0.8));
+        gc.fillRect(x, y, width, height);
+        gc.setFill(new Color(0, 0, 0, 1.0));
         gc.strokeRect(x, y, width, height);
         gc.fillText(tokenName, x + width/2 , y + height/2 + 5);
     
