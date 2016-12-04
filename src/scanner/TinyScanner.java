@@ -15,13 +15,21 @@ public class TinyScanner {
 		"if", "then", "else", "end", "repeat", "until", "read", "write"
 		);
 	
-	private static State CurrentState;
-	private static State NextState = State.START;
-	private static ArrayList<String> Tokens = new ArrayList<>();
+	private State CurrentState;
+	private State NextState;
+	private ArrayList<String> Tokens;
+	private ArrayList<String> TokensTypes;
+	
+	public TinyScanner() {
+		NextState = State.START;
+		Tokens = new ArrayList<>();
+		TokensTypes = new ArrayList<>();
+	}
 
 	public void Scan(String line)
 	{
 		String token = "";
+		String type = "";
 		char CurrentChar = 0;
 		int i = 0;
 		while(i < line.length() || NextState == State.DONE)
@@ -45,23 +53,27 @@ public class TinyScanner {
 				else if(CurrentChar == ':')
 				{
 					token += CurrentChar;
+					type = "assign";
 					NextState = State.IN_ASSIGN;
 				}
 				else if(Character.isLetter(CurrentChar))
 				{
 					token += CurrentChar;
+					type = "id";
 					NextState = State.IN_IDENTIFIER;
 				}
 				else if(Character.isDigit(CurrentChar))
 				{
 					token += CurrentChar;
+					type = "const";
 					NextState = State.IN_NUMBER;
 				}
 				else if(CurrentChar == '+' || CurrentChar == '-' || CurrentChar == '*' ||
 						CurrentChar == '/' || CurrentChar == '(' || CurrentChar == ')' ||
-						CurrentChar == '<' || CurrentChar == '>' || CurrentChar == ';' || 
+						CurrentChar == '<' || CurrentChar == ';' || 
 						CurrentChar == '=')
 				{
+					type = String.valueOf(CurrentChar);
 					token += CurrentChar;
 					NextState = State.DONE;
 				}
@@ -132,6 +144,7 @@ public class TinyScanner {
 				NextState = State.START;
 				if(!token.isEmpty())
 				{
+					TokensTypes.add(type);
 					Tokens.add(token);
 					token = "";
 				}
@@ -155,7 +168,7 @@ public class TinyScanner {
 			}
 			else if(RESERVED_WORDS.contains(token))
 			{
-				OutputFile.write(String.format("%-30.30s  %-30.30s%n", token, "RESERVED"));
+				OutputFile.write(String.format("%-30.30s  %-30.30s%n", token, token.toUpperCase()));
 			}
 			else
 			{
@@ -186,6 +199,19 @@ public class TinyScanner {
 		return Tokens;
 	}
 	
+	public ArrayList<String> getTokensTypes()
+	{
+		for(int i = 0; i < Tokens.size(); i++)
+		{
+			if(RESERVED_WORDS.contains(Tokens.get(i)))
+			{
+				TokensTypes.remove(i);
+				TokensTypes.add(i, Tokens.get(i));
+			}
+		}
+		return TokensTypes;
+	}
+	
 	private static Map<String, String> TokensMap() {
         Map<String, String> result = new HashMap<String, String>();
         result.put(":=", "ASSIGN");
@@ -194,10 +220,9 @@ public class TinyScanner {
         result.put("-", "MINUS");
         result.put("/", "DIV");
         result.put("<", "LT");
-        result.put(">", "GT");
         result.put("*", "MUL");
-        result.put("(", "LEFT BRACKET");
-        result.put(")", "RIGHT BRACKET");
+        result.put("(", "LB");
+        result.put(")", "RB");
         result.put("=", "EQ");
         return result;
     }

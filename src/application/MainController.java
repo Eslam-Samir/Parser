@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import parser.TinyParser;
 import scanner.TinyScanner;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -37,6 +38,8 @@ public class MainController {
 			{
 				scanner.Scan(line);
 			}
+			TinyParser parser = new TinyParser(scanner.getTokens(), scanner.getTokensTypes());
+			parser.RunParser();
 			scanner.PrintTokens("output.txt");
 			reader.close();
 			

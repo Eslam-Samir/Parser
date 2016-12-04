@@ -3,9 +3,15 @@ package application;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.Math;
 
+import parser.TinyParser;
 import parser.TreeNode;
+import scanner.TinyScanner;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
@@ -34,25 +40,50 @@ public class TreeController implements Initializable{
 		gc.setLineWidth(2);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setFont(new Font(18));
+        
         /* testing */
-        ArrayList<TreeNode> nodes = new ArrayList<>();
+      /*  ArrayList<TreeNode> nodes = new ArrayList<>();
         for (int i = 0; i < 7; i++)
-        	nodes.add(new TreeNode("token" + i));
-        nodes.get(3).AddChild(new TreeNode("hi"));
-        nodes.get(4).AddChild(new TreeNode("hi2"));
-        nodes.get(4).AddChild(new TreeNode("hi2"));
-        nodes.get(5).AddChild(new TreeNode("hi3"));
-        nodes.get(5).AddChild(new TreeNode("hi3"));
-        nodes.get(5).AddChild(new TreeNode("hi3"));
-        TreeNode root = new TreeNode("token", nodes); 
-		DrawTreeNode(gc, canvas.getWidth()/2, 10, root);
+        	nodes.add(new TreeNode("token" + i, " "));
+        nodes.get(3).AddChild(new TreeNode("hi", " "));
+        nodes.get(4).AddChild(new TreeNode("hi2", " "));
+        nodes.get(4).AddChild(new TreeNode("hi2", " "));
+        nodes.get(5).AddChild(new TreeNode("hi3", " "));
+        nodes.get(5).AddChild(new TreeNode("hi3", " "));
+        nodes.get(5).AddChild(new TreeNode("hi3", " "));
+        TreeNode root = new TreeNode("token", " ", nodes);
+        */
+        
+        BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader("input.txt"));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String line = "";
+		TinyScanner scanner = new TinyScanner();
+		try {
+			while((line = reader.readLine()) != null)
+			{
+				scanner.Scan(line);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		TinyParser parser = new TinyParser(scanner.getTokens(), scanner.getTokensTypes());
+		parser.RunParser();
+		TreeNode root = parser.getRoot();
+		DrawTreeNode(gc, 10, 10, root);
 		
-		canvasContainer.setHvalue(0.5);
+		//canvasContainer.setHvalue(0.5);
 	}
 	
 	private void DrawTreeNode(GraphicsContext gc, double x, double y, TreeNode node) {
 		float width = 100, height = 50;
 		String tokenName = node.getTokenName();
+		String tokenValue = "(" + node.getTokenValue() + ")";
 		boolean isRoot = node.isRoot();
 		int childrenCount = node.getChildrenCount();
 		
@@ -60,12 +91,15 @@ public class TreeController implements Initializable{
         gc.fillRect(x, y, width, height);
         gc.setFill(new Color(0, 0, 0, 1.0));
         gc.strokeRect(x, y, width, height);
-        gc.fillText(tokenName, x + width/2 , y + height/2 + 5);
+        gc.fillText(tokenName, x + width/2 , y + height/2 - 5);
+        gc.fillText(tokenValue, x + width/2 , y + height/2 + 15);
     
         if(!isRoot)
         {
         	double x1, y1, x2, y2, theta, r, initial_theta;
-        	initial_theta = 20;
+        	if((initial_theta = 70 - 10*childrenCount) <= 0)
+        		initial_theta = 15;
+        	
         	x1 = x + width/2;
         	y1 = y + height;
         	if(childrenCount == 1)
@@ -93,6 +127,18 @@ public class TreeController implements Initializable{
 	        		DrawTreeNode(gc, x2 - width/2, y2, node.getChild(i));
 	        	}
         	}
+        }
+        
+        if(node.hasNext())
+        {
+        	double x1, y1, x2, y2;
+        	x1 = x + width;
+        	y1 = y + height/2;
+        	x2 = x1 + width * (childrenCount + 2);
+        	y2 = y1;
+        	
+        	gc.strokeLine(x1, y1, x2, y2);
+        	DrawTreeNode(gc, x2, y2 - height/2, node.getNext());
         }
     }
 	
