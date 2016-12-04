@@ -1,16 +1,10 @@
 package scanner;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class TinyScanner {
-	private static final Map<String, String> TOKEN_NAMES = TokensMap();
 	private static final List<String> RESERVED_WORDS = Arrays.asList(
 		"if", "then", "else", "end", "repeat", "until", "read", "write"
 		);
@@ -153,45 +147,20 @@ public class TinyScanner {
 		}		
 	}
 	
-	public void PrintTokens(String filename) throws IOException
+	public String getTokensString()
 	{
-		BufferedWriter OutputFile = new BufferedWriter(new FileWriter("output.txt"));
-		String token;
-		OutputFile.write(String.format("%-30.30s  %-30.30s%n", "Token Value", "Token Type"));
-		OutputFile.write("\r\n");
+		String TokensString = "";
 		for(int i = 0; i < Tokens.size(); i++)
 		{
-			token = Tokens.get(i);
-			if(TOKEN_NAMES.containsKey(token))
-			{
-				OutputFile.write(String.format("%-30.30s  %-30.30s%n", token, TOKEN_NAMES.get(token)));
-			}
-			else if(RESERVED_WORDS.contains(token))
-			{
-				OutputFile.write(String.format("%-30.30s  %-30.30s%n", token, token.toUpperCase()));
-			}
-			else
-			{
-				boolean isNumber = true;
-				for(int j = 0; j < token.length(); j++)
-				{
-					if(!Character.isDigit(token.charAt(j)))
-					{
-						isNumber = false;
-						break;
-					}
-				}
-				if(isNumber)
-				{
-					OutputFile.write(String.format("%-30.30s  %-30.30s%n", token, "NUMBER"));
-				}
-				else
-				{
-					OutputFile.write(String.format("%-30.30s  %-30.30s%n", token, "IDENTIFIER"));
-				}
-			}
+			String token = Tokens.get(i), type = TokensTypes.get(i);
+			if(token.equals("<") || token.equals("=") || token.equals("+") ||
+					token.equals("-") || token.equals("*") || token.equals("/"))
+				type = "op";
+			else if(token.equals(";"))
+				type = "semi";
+			TokensString += String.format("%-30.30s  %-30.30s%n", token, type);
 		}
-		OutputFile.close();
+		return TokensString;
 	}
 	
 	public ArrayList<String> getTokens()
@@ -212,18 +181,4 @@ public class TinyScanner {
 		return TokensTypes;
 	}
 	
-	private static Map<String, String> TokensMap() {
-        Map<String, String> result = new HashMap<String, String>();
-        result.put(":=", "ASSIGN");
-        result.put(";", "SEMI");
-        result.put("+", "PLUS");
-        result.put("-", "MINUS");
-        result.put("/", "DIV");
-        result.put("<", "LT");
-        result.put("*", "MUL");
-        result.put("(", "LB");
-        result.put(")", "RB");
-        result.put("=", "EQ");
-        return result;
-    }
 }

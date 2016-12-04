@@ -2,6 +2,8 @@ package parser;
 
 import java.util.ArrayList;
 
+import extras.Alerts;
+
 public class TinyParser {
 	private ArrayList<String> Tokens;
 	private ArrayList<String> TokensTypes;
@@ -216,10 +218,8 @@ public class TinyParser {
 	}
 	
 	private void error(int line) {
-		for(int i = 0; i < TokensTypes.size(); i++)
-			System.out.println(TokensTypes.get(i));
-		System.out.println("Error At Token: " +CurrentToken + ", TinyParser Line: " + String.valueOf(line));
-		System.out.println("Pointer Value: " + String.valueOf(pointer));
-		System.exit(1);
+		String error = "Error At Token: " + CurrentToken;
+		String content = "TinyParser Line: " + String.valueOf(line) + "\nPointer Value: " + String.valueOf(pointer);
+		Alerts.createErrorAlert(error, content);
 	}
 }

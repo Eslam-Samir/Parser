@@ -18,6 +18,8 @@ fact                            IDENTIFIER
 fact                            IDENTIFIER                    
 *                               MUL                           
 x                               IDENTIFIER                    
++                               PLUS                          
+1                               NUMBER                        
 ;                               SEMI                          
 x                               IDENTIFIER                    
 :=                              ASSIGN                        
@@ -31,4 +33,8 @@ x                               IDENTIFIER
 ;                               SEMI                          
 write                           WRITE                         
 fact                            IDENTIFIER                    
+else                            ELSE                          
+x                               IDENTIFIER                    
+:=                              ASSIGN                        
+20                              NUMBER                        
 end                             END                           

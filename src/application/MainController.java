@@ -2,17 +2,12 @@ package application;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.ArrayList;
 import java.util.Scanner;
 
-import parser.TinyParser;
+import extras.Alerts;
 import scanner.TinyScanner;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -22,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
 public class MainController {
@@ -42,6 +38,10 @@ public class MainController {
 		Stage stage = (Stage) Editor.getScene().getWindow();
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open Tiny Language File");
+		ExtensionFilter extFilter = 
+                new FileChooser.ExtensionFilter("Text files (*.txt)", "*.txt");
+        fileChooser.getExtensionFilters().add(extFilter);
+        
 		File file = fileChooser.showOpenDialog(stage);
 		if(file != null)
 		{
@@ -61,13 +61,23 @@ public class MainController {
 	}
 	
 	public void SaveFile(ActionEvent action) {
-		if(!Editor.getText().isEmpty())
+		if(Editor.getText().isEmpty())
+		{
+			Alerts.createWarningAlert("Editor is empty");
+		}
+		else
 		{
 			try {
 				Stage stage = (Stage) Editor.getScene().getWindow();
 				FileChooser fileChooser = new FileChooser();
 				fileChooser.setTitle("Save Tiny Language File");
+				ExtensionFilter extFilter = 
+                        new FileChooser.ExtensionFilter("Text files (*.txt)", "*.txt");
+                fileChooser.getExtensionFilters().add(extFilter);
+                
+				fileChooser.setInitialFileName("TinyCode");
 				File file = fileChooser.showSaveDialog(stage);
+				
 				if(file != null)
 				{
 					FileWriter writer = new FileWriter(file);
@@ -78,46 +88,62 @@ public class MainController {
 				e.printStackTrace();
 			}
 		}
-		else
-		{
-			// TODO Alert editor is empty
-		}
 	}
 	
 	public void ScanTokens(ActionEvent action) {
-		if(!Editor.getText().isEmpty())
+		if(Editor.getText().isEmpty())
 		{
-			display.setText("");
-			String TinyCode = Editor.getText();
-			scanner = new TinyScanner();
-			scanner.Scan(TinyCode);
-			ArrayList<String> tokens = scanner.getTokens(), types = scanner.getTokensTypes();
-			for(int i = 0; i < tokens.size(); i++)
-			{
-				String token = tokens.get(i), type = types.get(i);
-				if(token.equals("<") || token.equals("=") || token.equals("+") ||
-						token.equals("-") || token.equals("*") || token.equals("/"))
-					type = "op";
-				else if(token.equals(";"))
-					type = "semi";
-				display.setText(display.getText() + 
-						String.format("%-30.30s  %-30.30s%n", token, type));
-			}
-			try {
-				scanner.PrintTokens("output.txt");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
+			Alerts.createWarningAlert("Editor is empty");
 		}
 		else
 		{
-			// TODO Alert enter code
+			String TinyCode = Editor.getText();
+			scanner = new TinyScanner();
+			scanner.Scan(TinyCode);
+			display.setText(scanner.getTokensString());
 		}
 	}
+	
+	public void SaveTokens(ActionEvent action) {
+		if(Editor.getText().isEmpty())
+		{
+			Alerts.createWarningAlert("Editor is empty");
+		}
+		else if(display.getText().isEmpty())
+		{
+			Alerts.createWarningAlert("The Code is not Scanned", "Press Scan Tokens first");
+		}
+		else
+		{
+			try {
+				Stage stage = (Stage) display.getScene().getWindow();
+				FileChooser fileChooser = new FileChooser();
+				fileChooser.setTitle("Save Tokens File");
+				ExtensionFilter extFilter = 
+                        new FileChooser.ExtensionFilter("Text files (*.txt)", "*.txt");
+                fileChooser.getExtensionFilters().add(extFilter);
+                
+				fileChooser.setInitialFileName("tokens");
+				File file = fileChooser.showSaveDialog(stage);
+				
+				if(file != null)
+				{
+					FileWriter writer = new FileWriter(file);
+					writer.write(display.getText());
+					writer.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public void CreateTree(ActionEvent action) {
-		// Switch to tree scene
-		if(scanner != null)
+		if(scanner == null)
+		{
+			Alerts.createWarningAlert("The Code is not Scanned", "Press Scan Tokens first");
+		}
+		else
 		{
 			try {
 				Stage stage = new Stage();
@@ -133,10 +159,6 @@ public class MainController {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
-		else
-		{
-			// Alert scanner not created
 		}
 	}
 }
