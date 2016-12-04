@@ -3,15 +3,10 @@ package application;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.lang.Math;
 
 import parser.TinyParser;
 import parser.TreeNode;
-import scanner.TinyScanner;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
@@ -21,9 +16,11 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 
 public class TreeController implements Initializable{
+	
+	private static final float width = 100, height = 50;
+	private static final int CANVAS_WIDTH = 3000, CANVAS_HEIGHT = 3000;
 	
 	@FXML
 	private VBox parent;
@@ -34,66 +31,35 @@ public class TreeController implements Initializable{
 	@FXML
 	private Canvas canvas;
 
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
+	public void setTreeTokens(ArrayList<String> tokens, ArrayList<String> types) {
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setLineWidth(2);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setFont(new Font(18));
-        
-        /* testing */
-      /*  ArrayList<TreeNode> nodes = new ArrayList<>();
-        for (int i = 0; i < 7; i++)
-        	nodes.add(new TreeNode("token" + i, " "));
-        nodes.get(3).AddChild(new TreeNode("hi", " "));
-        nodes.get(4).AddChild(new TreeNode("hi2", " "));
-        nodes.get(4).AddChild(new TreeNode("hi2", " "));
-        nodes.get(5).AddChild(new TreeNode("hi3", " "));
-        nodes.get(5).AddChild(new TreeNode("hi3", " "));
-        nodes.get(5).AddChild(new TreeNode("hi3", " "));
-        TreeNode root = new TreeNode("token", " ", nodes);
-        */
-        
-        BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new FileReader("input.txt"));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		String line = "";
-		TinyScanner scanner = new TinyScanner();
-		try {
-			while((line = reader.readLine()) != null)
-			{
-				scanner.Scan(line);
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		TinyParser parser = new TinyParser(scanner.getTokens(), scanner.getTokensTypes());
-		parser.RunParser();
+        TinyParser parser = new TinyParser(tokens, types);
+        parser.RunParser();
 		TreeNode root = parser.getRoot();
 		DrawTreeNode(gc, 100, 10, root);
-		
+	}
+	
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
+		canvas.setWidth(CANVAS_WIDTH);
+		canvas.setHeight(CANVAS_HEIGHT);
 		//canvasContainer.setHvalue(0.5);
 	}
 	
 	private void DrawTreeNode(GraphicsContext gc, double x, double y, TreeNode node) {
-		float width = 100, height = 50;
 		String tokenName = node.getTokenName();
 		String tokenValue = "(" + node.getTokenValue() + ")";
 		boolean isRoot = node.isRoot();
 		int childrenCount = node.getChildrenCount();
 		int padding = 0;
 		
-        gc.setFill(new Color(1, 1, 1, 0.8));
-        gc.fillRect(x, y, width, height);
-        gc.setFill(new Color(0, 0, 0, 1.0));
-        gc.strokeRect(x, y, width, height);
-        gc.fillText(tokenName, x + width/2 , y + height/2 - 5);
-        gc.fillText(tokenValue, x + width/2 , y + height/2 + 15);
+		if(tokenName.equals("op") || tokenName.equals("id") || tokenName.equals("const"))
+			DrawTerminalNode(gc, x, y, tokenName, tokenValue);
+		else
+			DrawNonTerminalNode(gc, x, y, tokenName, tokenValue);
     
         if(!isRoot)
         {
@@ -149,5 +115,31 @@ public class TreeController implements Initializable{
         }
     }
 	
+	private void DrawTerminalNode(GraphicsContext gc, double x, double y, String name, String value)
+	{
+		gc.setFill(new Color(1, 1, 1, 0.8));
+        gc.fillOval(x, y, width, height);
+        gc.setFill(new Color(0, 0, 0, 1.0));
+        gc.strokeOval(x, y, width, height);
+        gc.fillText(name, x + width/2 , y + height/2 - 5);
+	    gc.fillText(value, x + width/2 , y + height/2 + 15);
+	}
 	
+	private void DrawNonTerminalNode(GraphicsContext gc, double x, double y, String name, String value)
+	{
+		gc.setFill(new Color(1, 1, 1, 0.8));
+        gc.fillRect(x, y, width, height);
+        gc.setFill(new Color(0, 0, 0, 1.0));
+        gc.strokeRect(x, y, width, height);
+        
+        if(name.equals("write") || name.equals("repeat") || name.equals("if"))
+        {
+	        gc.fillText(name, x + width/2 , y + height/2 + 5);
+        }
+        else
+        {
+        	gc.fillText(name, x + width/2 , y + height/2 - 5);
+	        gc.fillText(value, x + width/2 , y + height/2 + 15);
+        }
+	}
 }
