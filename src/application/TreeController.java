@@ -75,7 +75,7 @@ public class TreeController implements Initializable{
 		TinyParser parser = new TinyParser(scanner.getTokens(), scanner.getTokensTypes());
 		parser.RunParser();
 		TreeNode root = parser.getRoot();
-		DrawTreeNode(gc, 10, 10, root);
+		DrawTreeNode(gc, 100, 10, root);
 		
 		//canvasContainer.setHvalue(0.5);
 	}
@@ -86,6 +86,7 @@ public class TreeController implements Initializable{
 		String tokenValue = "(" + node.getTokenValue() + ")";
 		boolean isRoot = node.isRoot();
 		int childrenCount = node.getChildrenCount();
+		int padding = 0;
 		
         gc.setFill(new Color(1, 1, 1, 0.8));
         gc.fillRect(x, y, width, height);
@@ -118,13 +119,19 @@ public class TreeController implements Initializable{
 	        		theta = -(initial_theta + i*((180 - 2*initial_theta) / (childrenCount-1)));
 	        		theta = Math.toRadians(theta);
 	        		r = height/Math.sin(theta);
-	        		r *= (childrenCount/1.5); // scale r depending on number of children
-	        		x2 = x1 + r * Math.cos(theta);
+	        		r *= (childrenCount/1); // scale r depending on number of children
+	        		x2 = x1 + r * Math.cos(theta) + padding;
 	        		y2 = y1 + r * Math.sin(theta);
-	        		System.out.println(r);
-	        		System.out.println(Math.toDegrees(theta));
+	        		
 	        		gc.strokeLine(x1, y1, x2, y2);
 	        		DrawTreeNode(gc, x2 - width/2, y2, node.getChild(i));
+	        		
+	        		TreeNode next = node.getChild(i).getNext();
+	        		while(next != null)
+	        		{
+	        			padding += width * (childrenCount + 1);
+	        			next = next.getNext();
+	        		}
 	        	}
         	}
         }
@@ -134,7 +141,7 @@ public class TreeController implements Initializable{
         	double x1, y1, x2, y2;
         	x1 = x + width;
         	y1 = y + height/2;
-        	x2 = x1 + width * (childrenCount + 2);
+        	x2 = x1 + width * (childrenCount + 1);
         	y2 = y1;
         	
         	gc.strokeLine(x1, y1, x2, y2);
