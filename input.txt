@@ -1,5 +1,10 @@
 { Sample program in the TINY language }
 read x; {input an integer }
-if x < 0 then
-	x := 10
+if 0 < x then { don’t compute if x <= 0 }
+	fact := 1;
+	repeat
+		fact := fact * x + 1;
+		x := x - 1
+	until x = 0;
+	write fact { output factorial of x }
 end

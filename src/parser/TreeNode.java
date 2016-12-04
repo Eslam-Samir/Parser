@@ -81,4 +81,16 @@ public class TreeNode {
 	{
 		return this.NextNode;
 	}
+	
+	public boolean isEmpty()
+	{
+		if(Name == null && Value == null)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 }

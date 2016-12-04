@@ -116,52 +116,65 @@ public class TinyParser {
 	
 	private TreeNode exp() {
 		TreeNode parent = new TreeNode();
+
 		TreeNode left = simple_exp();
-		TreeNode right;
-		
+		TreeNode temp = parent;
 		while(CurrentToken.equals("<") || CurrentToken.equals("="))
 		{
-			parent.setName("op");
-			parent.setValue(CurrentToken);
+			temp.setName("op");
+			temp.setValue(CurrentToken);
 			match(CurrentToken);
-			right = simple_exp();
-			parent.AddChild(left);
-			parent.AddChild(right);
+			TreeNode right = simple_exp();
+			temp.AddChild(left);
+			temp.AddChild(right);
+			temp = left;
 		}
-		return parent;
+		if(parent.isEmpty())
+			return left;
+		else 
+			return parent;
 	}
 	
 	private TreeNode simple_exp() {
 		TreeNode parent = new TreeNode();
+
 		TreeNode left = term();
-		TreeNode right;
-		
+		TreeNode temp = parent;
 		while(CurrentToken.equals("+") || CurrentToken.equals("-"))
 		{
-			parent.setName("op");
-			parent.setValue(CurrentToken);
+			temp.setName("op");
+			temp.setValue(CurrentToken);
 			match(CurrentToken);
-			right = term();
-			parent.AddChild(left);
-			parent.AddChild(right);
+			TreeNode right = term();
+			temp.AddChild(left);
+			temp.AddChild(right);
+			temp = left;
 		}
-		return parent;
+		if(parent.isEmpty())
+			return left;
+		else 
+			return parent;
 	}
 	
 	private TreeNode term() {
 		TreeNode parent = new TreeNode();
+
 		TreeNode left = factor();
-		TreeNode right;
+		TreeNode temp = parent;
 		while(CurrentToken.equals("*") || CurrentToken.equals("/"))
 		{
-			parent.setName("op");
-			parent.setValue(CurrentToken);
+			temp.setName("op");
+			temp.setValue(CurrentToken);
 			match(CurrentToken);
-			right = factor();
-			parent.AddChild(left);
-			parent.AddChild(right);
+			TreeNode right = factor();
+			temp.AddChild(left);
+			temp.AddChild(right);
+			temp = left;
 		}
-		return parent;
+		if(parent.isEmpty())
+			return left;
+		else 
+			return parent;
 	}
 	
 	private TreeNode factor() {
