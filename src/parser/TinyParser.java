@@ -52,7 +52,7 @@ public class TinyParser {
 		{
 			return repeat_stmt();
 		}
-		else if(CurrentToken.equals("id"))
+		else if(CurrentToken.equals("identifier"))
 		{
 			return assign_stmt();
 		}
@@ -96,7 +96,7 @@ public class TinyParser {
 	}
 	
 	private TreeNode assign_stmt() {
-		String name = match("id").getTokenValue();
+		String name = match("identifier").getTokenValue();
 		TreeNode parent = match("assign");
 		parent.setValue(name);
 		parent.AddChild(exp());
@@ -105,7 +105,7 @@ public class TinyParser {
 	
 	private TreeNode read_stmt() {
 		TreeNode parent = match("read");
-		String name = match("id").getTokenValue();
+		String name = match("identifier").getTokenValue();
 		parent.setValue(name);
 		return parent;
 	}
@@ -118,18 +118,15 @@ public class TinyParser {
 	
 	private TreeNode exp() {
 		TreeNode parent = new TreeNode();
-
 		TreeNode left = simple_exp();
-		TreeNode temp = parent;
 		while(CurrentToken.equals("<") || CurrentToken.equals("="))
 		{
-			temp.setName("op");
-			temp.setValue(CurrentToken);
-			match(CurrentToken);
+			TreeNode newLeft = match(CurrentToken);
+			newLeft.setName("op");
+			newLeft.AddChild(left);
 			TreeNode right = simple_exp();
-			temp.AddChild(left);
-			temp.AddChild(right);
-			temp = left;
+			newLeft.AddChild(right);
+			left = newLeft;
 		}
 		if(parent.isEmpty())
 			return left;
@@ -139,18 +136,15 @@ public class TinyParser {
 	
 	private TreeNode simple_exp() {
 		TreeNode parent = new TreeNode();
-
 		TreeNode left = term();
-		TreeNode temp = parent;
 		while(CurrentToken.equals("+") || CurrentToken.equals("-"))
 		{
-			temp.setName("op");
-			temp.setValue(CurrentToken);
-			match(CurrentToken);
-			TreeNode right = term();
-			temp.AddChild(left);
-			temp.AddChild(right);
-			temp = left;
+				TreeNode newLeft = match(CurrentToken);
+				newLeft.setName("op");
+				newLeft.AddChild(left);
+				TreeNode right = term();
+				newLeft.AddChild(right);
+				left = newLeft;
 		}
 		if(parent.isEmpty())
 			return left;
@@ -160,18 +154,15 @@ public class TinyParser {
 	
 	private TreeNode term() {
 		TreeNode parent = new TreeNode();
-
 		TreeNode left = factor();
-		TreeNode temp = parent;
 		while(CurrentToken.equals("*") || CurrentToken.equals("/"))
 		{
-			temp.setName("op");
-			temp.setValue(CurrentToken);
-			match(CurrentToken);
+			TreeNode newLeft = match(CurrentToken);
+			newLeft.setName("op");
+			newLeft.AddChild(left);
 			TreeNode right = factor();
-			temp.AddChild(left);
-			temp.AddChild(right);
-			temp = left;
+			newLeft.AddChild(right);
+			left = newLeft;
 		}
 		if(parent.isEmpty())
 			return left;
@@ -188,7 +179,7 @@ public class TinyParser {
 			parent.AddChild(match(")"));
 			return parent;
 		}
-		else if(CurrentToken.equals("const") || CurrentToken.equals("id"))
+		else if(CurrentToken.equals("number") || CurrentToken.equals("identifier"))
 		{
 			return match(CurrentToken);
 		}

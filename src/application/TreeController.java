@@ -32,10 +32,9 @@ import javafx.stage.Stage;
 public class TreeController implements Initializable{
 	
 	private static final double NODE_WIDTH = 100, NODE_HEIGHT = 50;
-	private static final int CANVAS_NODE_WIDTH = 3000, CANVAS_NODE_HEIGHT = 3000;
-	private static final int INITIAL_X = 100, INITIAL_Y = 10;
+	private static int INITIAL_X = 0, INITIAL_Y = 0;
 	
-	private double maxX = 0, maxY = 0;
+	private double maxX = 0, maxY = 0, minX = 0, minY = 0;
 	@FXML
 	private VBox parent;
 	
@@ -44,8 +43,11 @@ public class TreeController implements Initializable{
 	
 	@FXML
 	private Canvas canvas;
+	
+	
 
 	public void setTreeTokens(ArrayList<String> tokens, ArrayList<String> types) {
+		
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setLineWidth(2);
         gc.setTextAlign(TextAlignment.CENTER);
@@ -54,13 +56,13 @@ public class TreeController implements Initializable{
         TinyParser parser = new TinyParser(tokens, types);
         parser.RunParser();
 		TreeNode root = parser.getRoot();
+		setCanvasBoundries(root);
+		
 		DrawTreeNode(gc, INITIAL_X, INITIAL_Y, root);
 	}
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		canvas.setWidth(CANVAS_NODE_WIDTH);
-		canvas.setHeight(CANVAS_NODE_HEIGHT);
 	}
 	
 	public void SaveCanvas(ActionEvent action) {
@@ -73,15 +75,26 @@ public class TreeController implements Initializable{
 		fileChooser.setInitialFileName("SyntaxTree");
 		File file = fileChooser.showSaveDialog(stage);
 		
-		int width = (int)(INITIAL_X + maxX + 2*NODE_WIDTH);
-		int height = (int)(INITIAL_Y + maxY + NODE_HEIGHT);
-		BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		int width = (int)(maxX + 2*NODE_WIDTH);
+		int height = (int)(maxY + 2*NODE_HEIGHT);
+		
 		WritableImage image = new WritableImage(width, height);
 		SnapshotParameters param = new SnapshotParameters();
 		canvas.snapshot(param, image);
 		try {
+			int x = (int)(minX - NODE_WIDTH), y = (int)(minY - NODE_HEIGHT); 
+			if(x < 0)
+				x = 0;
+			if(y < 0)
+				y = 0;
+			width -= minX;
+			height -= minY;
+			WritableImage croppedImage = new WritableImage(image.getPixelReader(), 
+					x, y, width, height);
+			BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			
 			String extension = file.getName().substring(file.getName().lastIndexOf('.') + 1);
-			ImageIO.write(SwingFXUtils.fromFXImage(image, bufferedImage), extension, file);
+			ImageIO.write(SwingFXUtils.fromFXImage(croppedImage, bufferedImage), extension, file);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -94,7 +107,7 @@ public class TreeController implements Initializable{
 		int childrenCount = node.getChildrenCount();
 		int padding = 0;
 		
-		if(tokenName.equals("op") || tokenName.equals("id") || tokenName.equals("const"))
+		if(tokenName.equals("op") || tokenName.equals("identifier") || tokenName.equals("number"))
 			DrawTerminalNode(gc, x, y, tokenName, tokenValue);
 		else
 			DrawNonTerminalNode(gc, x, y, tokenName, tokenValue);
@@ -113,10 +126,7 @@ public class TreeController implements Initializable{
         		r = NODE_HEIGHT/Math.sin(theta);
         		x2 = x1 + r * Math.cos(theta);
         		y2 = y1 + r * Math.sin(theta);
-        		if(x2 > maxX)
-        			maxX = x2;
-        		if(y2 > maxY)
-        			maxY = y2;
+        		
         		gc.strokeLine(x1, y1, x2, y2);
         		DrawTreeNode(gc, x2 - NODE_WIDTH/2, y2, node.getChild(0));
         	}
@@ -124,17 +134,16 @@ public class TreeController implements Initializable{
         	{
 	        	for(int i = 0; i < childrenCount; i++)
 	        	{
+	        		if(node.getChild(0).getChildrenCount() == 2 && node.getChild(1).getChildrenCount() == 2)
+	        		{
+	        			initial_theta = 35;
+	        		}
 	        		theta = -(initial_theta + i*((180 - 2*initial_theta) / (childrenCount-1)));
 	        		theta = Math.toRadians(theta);
 	        		r = NODE_HEIGHT/Math.sin(theta);
 	        		r *= (childrenCount/1); // scale r depending on number of children
 	        		x2 = x1 + r * Math.cos(theta) + padding;
 	        		y2 = y1 + r * Math.sin(theta);
-	        		
-	        		if(x2 > maxX)
-	        			maxX = x2;
-	        		if(y2 > maxY)
-	        			maxY = y2;
 	        		
 	        		gc.strokeLine(x1, y1, x2, y2);
 	        		DrawTreeNode(gc, x2 - NODE_WIDTH/2, y2, node.getChild(i));
@@ -157,18 +166,122 @@ public class TreeController implements Initializable{
 
         	x2 = x1 + NODE_WIDTH * (childrenCount + 1);
         	y2 = y1;
-    		if(x2 > maxX)
-    			maxX = x2;
-    		if(y2 > maxY)
-    			maxY = y2;
+        	
         	gc.strokeLine(x1, y1, x2, y2);
         	DrawTreeNode(gc, x2, y2 - NODE_HEIGHT/2, node.getNext());
         }
     }
 	
+	private void setCanvasBoundries(TreeNode root) {
+		calcMaxAndMin(INITIAL_X, INITIAL_Y, root);
+		System.out.println(maxX);
+		System.out.println(maxY);
+		System.out.println(minX);
+		System.out.println(minY);
+		maxX = maxX - minX + 2 * NODE_WIDTH;
+		maxY = maxY - minY + 2 * NODE_HEIGHT;
+		INITIAL_X += (int)(NODE_WIDTH - minX/2);
+		INITIAL_Y += (int)(NODE_HEIGHT);
+		
+		minX = NODE_WIDTH;
+		minY = NODE_HEIGHT;
+		
+		System.out.println(maxX);
+		System.out.println(maxY);
+		System.out.println(minX);
+		System.out.println(minY);
+		System.out.println(INITIAL_X);
+		System.out.println(INITIAL_Y);
+		canvas.setWidth(maxX);
+		canvas.setHeight(maxY);
+	}
+	
+	// dummy function to calculate canvas boundries before drawing
+	private void calcMaxAndMin(double x, double y, TreeNode node) {
+		boolean isRoot = node.isRoot();
+		int childrenCount = node.getChildrenCount();
+		int padding = 0;
+		
+		if(!isRoot)
+        {
+        	double x1, y1, x2, y2, theta, r, initial_theta;
+        	if((initial_theta = 70 - 10*childrenCount) <= 0)
+        		initial_theta = 15;
+        	
+        	x1 = x + NODE_WIDTH/2;
+        	y1 = y + NODE_HEIGHT;
+        	if(childrenCount == 1)
+        	{
+        		theta = Math.toRadians(90);
+        		r = NODE_HEIGHT/Math.sin(theta);
+        		x2 = x1 + r * Math.cos(theta);
+        		y2 = y1 + r * Math.sin(theta);
+
+        		changeMax(x2 + NODE_WIDTH/2, y2 + NODE_HEIGHT);
+        		changeMax(x2 - NODE_WIDTH/2, y2);
+        		calcMaxAndMin(x2 - NODE_WIDTH/2, y2, node.getChild(0));
+        	}
+        	else
+        	{
+	        	for(int i = 0; i < childrenCount; i++)
+	        	{
+	        		if(node.getChild(0).getChildrenCount() == 2 && node.getChild(1).getChildrenCount() == 2)
+	        		{
+	        			initial_theta = 35;
+	        		}
+	        		theta = -(initial_theta + i*((180 - 2*initial_theta) / (childrenCount-1)));
+	        		theta = Math.toRadians(theta);
+	        		r = NODE_HEIGHT/Math.sin(theta);
+	        		r *= (childrenCount/1); // scale r depending on number of children
+	        		x2 = x1 + r * Math.cos(theta) + padding;
+	        		y2 = y1 + r * Math.sin(theta);
+	        		
+	        		changeMax(x2 + NODE_WIDTH/2, y2 + NODE_HEIGHT);
+	        		changeMin(x2 - NODE_WIDTH/2, y2);
+	        		calcMaxAndMin(x2 - NODE_WIDTH/2, y2, node.getChild(i));
+	        		
+	        		TreeNode next = node.getChild(i).getNext();
+	        		while(next != null)
+	        		{
+	        			padding += NODE_WIDTH * (childrenCount + 1);
+	        			next = next.getNext();
+	        		}
+	        	}
+        	}
+        }
+        
+        if(node.hasNext())
+        {
+        	double x1, y1, x2, y2;
+        	x1 = x + NODE_WIDTH;
+        	y1 = y + NODE_HEIGHT/2;
+
+        	x2 = x1 + NODE_WIDTH * (childrenCount + 1);
+        	y2 = y1;
+
+        	changeMax(x2, y2 + NODE_HEIGHT);	
+        	calcMaxAndMin(x2, y2 - NODE_HEIGHT/2, node.getNext());
+        }
+	}
+	
+	private void changeMax(double x, double y)
+	{
+		if(x > maxX)
+			maxX = x;
+		if(y > maxY)
+			maxY = y;
+	}
+	private void changeMin(double x, double y)
+	{
+		if(x < minX)
+			minX = x;
+		if(y < minY)
+			minY = y;
+	}
+	
 	private void DrawTerminalNode(GraphicsContext gc, double x, double y, String name, String value)
 	{
-		gc.setFill(new Color(1, 1, 1, 0.8));
+		gc.setFill(new Color(1, 1, 1, 0.6));
         gc.fillOval(x, y, NODE_WIDTH, NODE_HEIGHT);
         gc.setFill(new Color(0, 0, 0, 1.0));
         gc.strokeOval(x, y, NODE_WIDTH, NODE_HEIGHT);
@@ -178,7 +291,7 @@ public class TreeController implements Initializable{
 	
 	private void DrawNonTerminalNode(GraphicsContext gc, double x, double y, String name, String value)
 	{
-		gc.setFill(new Color(1, 1, 1, 0.8));
+		gc.setFill(new Color(1, 1, 1, 0.6));
         gc.fillRect(x, y, NODE_WIDTH, NODE_HEIGHT);
         gc.setFill(new Color(0, 0, 0, 1.0));
         gc.strokeRect(x, y, NODE_WIDTH, NODE_HEIGHT);

@@ -53,13 +53,13 @@ public class TinyScanner {
 				else if(Character.isLetter(CurrentChar))
 				{
 					token += CurrentChar;
-					type = "id";
+					type = "identifier";
 					NextState = State.IN_IDENTIFIER;
 				}
 				else if(Character.isDigit(CurrentChar))
 				{
 					token += CurrentChar;
-					type = "const";
+					type = "number";
 					NextState = State.IN_NUMBER;
 				}
 				else if(CurrentChar == '+' || CurrentChar == '-' || CurrentChar == '*' ||
