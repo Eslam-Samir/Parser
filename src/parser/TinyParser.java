@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import extras.Alerts;
 
 public class TinyParser {
+	
+	private static TinyParser ParserSingleton = new TinyParser();
+	
 	private ArrayList<String> Tokens;
 	private ArrayList<String> TokensTypes;
 	private TreeNode root;
@@ -12,13 +15,22 @@ public class TinyParser {
 	private String CurrentToken;
 	private int pointer;
 	
-	public TinyParser(ArrayList<String> tokens, ArrayList<String> types) { 
+	private TinyParser() {
 		Tokens = new ArrayList<>();
 		TokensTypes = new ArrayList<>();
+	}
+	
+	public void setTokens(ArrayList<String> tokens, ArrayList<String> types) {
+		Tokens.clear();
+		TokensTypes.clear();
 		Tokens.addAll(tokens);
 		TokensTypes.addAll(types);
 		pointer = 0;
 		CurrentToken = TokensTypes.get(0);
+	}
+	
+	public static TinyParser getParserInstance() {
+		return ParserSingleton;
 	}
 	
 	public TreeNode getRoot()
@@ -33,9 +45,9 @@ public class TinyParser {
 	private TreeNode stmt_sequence() {
 		TreeNode parent = statment();
 		TreeNode temp = parent; 
-		while(CurrentToken.equals(";"))
+		while(CurrentToken.equals("semi"))
 		{
-			match(";");
+			match("semi");
 			TreeNode next = statment();
 			temp.setNextNode(next);
 			temp = next;
@@ -119,10 +131,9 @@ public class TinyParser {
 	private TreeNode exp() {
 		TreeNode parent = new TreeNode();
 		TreeNode left = simple_exp();
-		while(CurrentToken.equals("<") || CurrentToken.equals("="))
+		while(CurrentToken.equals("op") && (Tokens.get(pointer).equals("<") || Tokens.get(pointer).equals("=")))
 		{
 			TreeNode newLeft = match(CurrentToken);
-			newLeft.setName("op");
 			newLeft.AddChild(left);
 			TreeNode right = simple_exp();
 			newLeft.AddChild(right);
@@ -137,10 +148,9 @@ public class TinyParser {
 	private TreeNode simple_exp() {
 		TreeNode parent = new TreeNode();
 		TreeNode left = term();
-		while(CurrentToken.equals("+") || CurrentToken.equals("-"))
+		while(CurrentToken.equals("op") && Tokens.get(pointer).equals("+") || Tokens.get(pointer).equals("-"))
 		{
 				TreeNode newLeft = match(CurrentToken);
-				newLeft.setName("op");
 				newLeft.AddChild(left);
 				TreeNode right = term();
 				newLeft.AddChild(right);
@@ -155,10 +165,9 @@ public class TinyParser {
 	private TreeNode term() {
 		TreeNode parent = new TreeNode();
 		TreeNode left = factor();
-		while(CurrentToken.equals("*") || CurrentToken.equals("/"))
+		while(CurrentToken.equals("op") && Tokens.get(pointer).equals("*") || Tokens.get(pointer).equals("/"))
 		{
 			TreeNode newLeft = match(CurrentToken);
-			newLeft.setName("op");
 			newLeft.AddChild(left);
 			TreeNode right = factor();
 			newLeft.AddChild(right);
@@ -210,7 +219,7 @@ public class TinyParser {
 	
 	private void error(int line) {
 		String error = "Error At Token: " + CurrentToken;
-		String content = "TinyParser Line: " + String.valueOf(line) + "\nPointer Value: " + String.valueOf(pointer);
+		String content = "TinyParser Line: " + String.valueOf(line) + "\nToken Number: " + String.valueOf(pointer);
 		Alerts.createErrorAlert(error, content);
 	}
 }

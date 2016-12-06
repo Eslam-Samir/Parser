@@ -1,10 +1,16 @@
 package scanner;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class TinyScanner {
+	
+	private static TinyScanner ScannerSingleton = new TinyScanner();
+	
 	private static final List<String> RESERVED_WORDS = Arrays.asList(
 		"if", "then", "else", "end", "repeat", "until", "read", "write"
 		);
@@ -14,10 +20,14 @@ public class TinyScanner {
 	private ArrayList<String> Tokens;
 	private ArrayList<String> TokensTypes;
 	
-	public TinyScanner() {
+	private TinyScanner() {
 		NextState = State.START;
 		Tokens = new ArrayList<>();
 		TokensTypes = new ArrayList<>();
+	}
+	
+	public static TinyScanner getScannerInstance() {
+	    return ScannerSingleton;
 	}
 
 	public void Scan(String line)
@@ -67,7 +77,12 @@ public class TinyScanner {
 						CurrentChar == '<' || CurrentChar == ';' || 
 						CurrentChar == '=')
 				{
-					type = String.valueOf(CurrentChar);
+					if(CurrentChar == ';')
+						type = "semi";
+					else if(CurrentChar == '(' || CurrentChar == ')')
+						type = String.valueOf(CurrentChar);
+					else
+						type = "op";
 					token += CurrentChar;
 					NextState = State.DONE;
 				}
@@ -152,15 +167,32 @@ public class TinyScanner {
 		String TokensString = "";
 		for(int i = 0; i < Tokens.size(); i++)
 		{
-			String token = Tokens.get(i), type = TokensTypes.get(i);
-			if(token.equals("<") || token.equals("=") || token.equals("+") ||
-					token.equals("-") || token.equals("*") || token.equals("/"))
-				type = "op";
-			else if(token.equals(";"))
-				type = "semi";
-			TokensString += String.format("%-30.30s  %-30.30s%n", token, type);
+			TokensString += String.format("%-30.30s  %-30.30s%n", Tokens.get(i), TokensTypes.get(i));
 		}
 		return TokensString;
+	}
+	
+	public void readTokensFromFile(File file)
+	{
+		if(file != null)
+		{
+			Scanner scan; // line scanner
+			try {
+				scan = new Scanner(file);
+				
+				while (scan.hasNext()) {
+					String line = scan.nextLine();
+					String arr[] = line.split("\\s+"); // split on any whitespace character
+					if(arr.length == 2)
+					{
+						Tokens.add(arr[0]);
+						TokensTypes.add(arr[1]);
+					}
+				}
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} 
+		}
 	}
 	
 	public ArrayList<String> getTokens()
@@ -174,11 +206,24 @@ public class TinyScanner {
 		{
 			if(RESERVED_WORDS.contains(Tokens.get(i)))
 			{
-				TokensTypes.remove(i);
+				TokensTypes.remove(i); //replace identifier with reserved word
 				TokensTypes.add(i, Tokens.get(i));
 			}
 		}
 		return TokensTypes;
+	}
+	
+	public boolean isEmpty() {
+		if(Tokens.isEmpty() || TokensTypes.isEmpty())
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	public void clear() {
+		Tokens.clear();
+		TokensTypes.clear();
 	}
 	
 }

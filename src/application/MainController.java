@@ -1,6 +1,5 @@
 package application;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -21,9 +20,6 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
 public class MainController {
-	
-	BufferedReader reader = null;
-	TinyScanner scanner = null;
 	
 	@FXML
 	private Button scan;
@@ -90,6 +86,26 @@ public class MainController {
 		}
 	}
 	
+	public void LoadTokens(ActionEvent action) {
+		Stage stage = (Stage) display.getScene().getWindow();
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Load Tokens File");
+		ExtensionFilter extFilter = 
+		        new FileChooser.ExtensionFilter("Text files (*.txt)", "*.txt");
+		fileChooser.getExtensionFilters().add(extFilter);
+		
+		fileChooser.setInitialFileName("tokens");
+		File file = fileChooser.showOpenDialog(stage);
+		
+		if(file != null)
+		{
+			TinyScanner scanner = TinyScanner.getScannerInstance();
+			scanner.clear();
+			scanner.readTokensFromFile(file);
+			display.setText(scanner.getTokensString());
+		}
+	}
+	
 	public void ScanTokens(ActionEvent action) {
 		if(Editor.getText().isEmpty())
 		{
@@ -98,20 +114,17 @@ public class MainController {
 		else
 		{
 			String TinyCode = Editor.getText();
-			scanner = new TinyScanner();
+			TinyScanner scanner = TinyScanner.getScannerInstance();
+			scanner.clear();
 			scanner.Scan(TinyCode);
 			display.setText(scanner.getTokensString());
 		}
 	}
 	
 	public void SaveTokens(ActionEvent action) {
-		if(Editor.getText().isEmpty())
+		if(display.getText().isEmpty())
 		{
-			Alerts.createWarningAlert("Editor is empty");
-		}
-		else if(display.getText().isEmpty())
-		{
-			Alerts.createWarningAlert("The Code is not Scanned", "Press Scan Tokens first");
+			Alerts.createWarningAlert("The Code is not Scanned", "Press Scan Tokens or Load Tokens first");
 		}
 		else
 		{
@@ -139,7 +152,7 @@ public class MainController {
 	}
 	
 	public void CreateTree(ActionEvent action) {
-		if(scanner == null)
+		if(TinyScanner.getScannerInstance().isEmpty())
 		{
 			Alerts.createWarningAlert("The Code is not Scanned", "Press Scan Tokens first");
 		}
@@ -147,11 +160,8 @@ public class MainController {
 		{
 			try {
 				Stage stage = new Stage();
-				FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/Tree.fxml"));
-				Parent root = loader.load();
-		        TreeController controller = loader.getController();
-		        controller.setTreeTokens(scanner.getTokens(), scanner.getTokensTypes());
-		     
+				FXMLLoader loader = new FXMLLoader(getClass().getResource("/Tree.fxml"));
+				Parent root = loader.load();		     
 		        Scene scene = new Scene(root);
 				stage.setScene(scene);
 				stage.setMaximized(true);

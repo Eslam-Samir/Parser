@@ -12,6 +12,7 @@ import javax.imageio.ImageIO;
 
 import parser.TinyParser;
 import parser.TreeNode;
+import scanner.TinyScanner;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -44,25 +45,23 @@ public class TreeController implements Initializable{
 	@FXML
 	private Canvas canvas;
 	
-	
-
-	public void setTreeTokens(ArrayList<String> tokens, ArrayList<String> types) {
-		
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setLineWidth(2);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setFont(new Font(18));
         
-        TinyParser parser = new TinyParser(tokens, types);
+        ArrayList<String> tokens = TinyScanner.getScannerInstance().getTokens();
+        ArrayList<String> types = TinyScanner.getScannerInstance().getTokensTypes();
+        
+        TinyParser parser = TinyParser.getParserInstance();
+        parser.setTokens(tokens, types);
         parser.RunParser();
 		TreeNode root = parser.getRoot();
 		setCanvasBoundries(root);
 		
 		DrawTreeNode(gc, INITIAL_X, INITIAL_Y, root);
-	}
-	
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
 	}
 	
 	public void SaveCanvas(ActionEvent action) {
@@ -174,24 +173,13 @@ public class TreeController implements Initializable{
 	
 	private void setCanvasBoundries(TreeNode root) {
 		calcMaxAndMin(INITIAL_X, INITIAL_Y, root);
-		System.out.println(maxX);
-		System.out.println(maxY);
-		System.out.println(minX);
-		System.out.println(minY);
 		maxX = maxX - minX + 2 * NODE_WIDTH;
 		maxY = maxY - minY + 2 * NODE_HEIGHT;
-		INITIAL_X += (int)(NODE_WIDTH - minX/2);
-		INITIAL_Y += (int)(NODE_HEIGHT);
+		INITIAL_X = (int)(NODE_WIDTH - minX/2);
+		INITIAL_Y = (int)(NODE_HEIGHT);
 		
 		minX = NODE_WIDTH;
 		minY = NODE_HEIGHT;
-		
-		System.out.println(maxX);
-		System.out.println(maxY);
-		System.out.println(minX);
-		System.out.println(minY);
-		System.out.println(INITIAL_X);
-		System.out.println(INITIAL_Y);
 		canvas.setWidth(maxX);
 		canvas.setHeight(maxY);
 	}
