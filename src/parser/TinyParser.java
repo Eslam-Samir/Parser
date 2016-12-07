@@ -182,11 +182,10 @@ public class TinyParser {
 	private TreeNode factor() {
 		if(CurrentToken.equals("("))
 		{
-			TreeNode parent = new TreeNode();
-			parent.AddChild(match("("));
-			parent.AddChild(exp());
-			parent.AddChild(match(")"));
-			return parent;
+			match("(");
+			TreeNode node = exp();
+			match(")");
+			return node;
 		}
 		else if(CurrentToken.equals("number") || CurrentToken.equals("identifier"))
 		{
