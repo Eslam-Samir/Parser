@@ -159,7 +159,15 @@ public class TinyScanner {
 				}
 				break;
 			}
-		}		
+		}	
+		for(i = 0; i < Tokens.size(); i++)
+		{
+			if(RESERVED_WORDS.contains(Tokens.get(i)))
+			{
+				TokensTypes.remove(i); //replace identifier with reserved word
+				TokensTypes.add(i, Tokens.get(i));
+			}
+		}
 	}
 	
 	public String getTokensString()
@@ -202,14 +210,6 @@ public class TinyScanner {
 	
 	public ArrayList<String> getTokensTypes()
 	{
-		for(int i = 0; i < Tokens.size(); i++)
-		{
-			if(RESERVED_WORDS.contains(Tokens.get(i)))
-			{
-				TokensTypes.remove(i); //replace identifier with reserved word
-				TokensTypes.add(i, Tokens.get(i));
-			}
-		}
 		return TokensTypes;
 	}
 	

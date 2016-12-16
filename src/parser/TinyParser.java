@@ -129,7 +129,6 @@ public class TinyParser {
 	}
 	
 	private TreeNode exp() {
-		TreeNode parent = new TreeNode();
 		TreeNode left = simple_exp();
 		while(CurrentToken.equals("op") && (Tokens.get(pointer).equals("<") || Tokens.get(pointer).equals("=")))
 		{
@@ -139,16 +138,12 @@ public class TinyParser {
 			newLeft.AddChild(right);
 			left = newLeft;
 		}
-		if(parent.isEmpty())
-			return left;
-		else 
-			return parent;
+		return left;
 	}
 	
 	private TreeNode simple_exp() {
-		TreeNode parent = new TreeNode();
 		TreeNode left = term();
-		while(CurrentToken.equals("op") && Tokens.get(pointer).equals("+") || Tokens.get(pointer).equals("-"))
+		while(CurrentToken.equals("op") && (Tokens.get(pointer).equals("+") || Tokens.get(pointer).equals("-")))
 		{
 				TreeNode newLeft = match(CurrentToken);
 				newLeft.AddChild(left);
@@ -156,16 +151,12 @@ public class TinyParser {
 				newLeft.AddChild(right);
 				left = newLeft;
 		}
-		if(parent.isEmpty())
-			return left;
-		else 
-			return parent;
+		return left;
 	}
 	
 	private TreeNode term() {
-		TreeNode parent = new TreeNode();
 		TreeNode left = factor();
-		while(CurrentToken.equals("op") && Tokens.get(pointer).equals("*") || Tokens.get(pointer).equals("/"))
+		while(CurrentToken.equals("op") && (Tokens.get(pointer).equals("*") || Tokens.get(pointer).equals("/")))
 		{
 			TreeNode newLeft = match(CurrentToken);
 			newLeft.AddChild(left);
@@ -173,10 +164,7 @@ public class TinyParser {
 			newLeft.AddChild(right);
 			left = newLeft;
 		}
-		if(parent.isEmpty())
-			return left;
-		else 
-			return parent;
+		return left;
 	}
 	
 	private TreeNode factor() {
@@ -202,7 +190,11 @@ public class TinyParser {
 		System.out.println("matching " + CurrentToken + " With " + token + " " + String.valueOf(pointer)); 
 		if(CurrentToken.equals(token))
 		{
-			TreeNode node = new TreeNode(CurrentToken, Tokens.get(pointer));
+			TreeNode node;
+			if(CurrentToken.equals("op") || CurrentToken.equals("identifier") || CurrentToken.equals("number"))
+				node = new TreeNode(CurrentToken, Tokens.get(pointer), true);
+			else
+				node = new TreeNode(CurrentToken, Tokens.get(pointer), false);
 			System.out.println("matched " + CurrentToken + " " + String.valueOf(pointer));
 			pointer++;
 			if(pointer < TokensTypes.size())

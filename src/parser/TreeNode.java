@@ -7,6 +7,10 @@ public class TreeNode {
 	private String Value;
 	private TreeNode NextNode;
 	private ArrayList<TreeNode> Children;
+	private boolean terminal;
+	
+	private double x;
+	private double y;
 	
 	public TreeNode() {
 		this.Children = new ArrayList<>();
@@ -16,24 +20,14 @@ public class TreeNode {
 		this.Children = new ArrayList<>();
 		this.Name = name;
 		this.Value = value;
+		this.terminal = false;
 	}
 	
-	public TreeNode(String name, String value, TreeNode child) {
+	public TreeNode(String name, String value, boolean terminal) {
 		this.Children = new ArrayList<>();
-		this.Children.add(child);
 		this.Name = name;
 		this.Value = value;
-	}
-	
-	public TreeNode(String name, String value, ArrayList<TreeNode> children) {
-		this.Children = new ArrayList<>();
-		this.Children.addAll(children);
-		this.Name = name;
-		this.Value = value;
-	}
-	
-	public void AddChildren(ArrayList<TreeNode> children) {
-		this.Children.addAll(children);
+		this.terminal = terminal;
 	}
 	
 	public void AddChild(TreeNode child) {
@@ -92,5 +86,29 @@ public class TreeNode {
 		{
 			return false;
 		}
+	}
+
+	public boolean isTerminal() {
+		return this.terminal;
+	}
+
+	public void setTerminal(boolean terminal) {
+		this.terminal = terminal;
+	}
+
+	public double getX() {
+		return x;
+	}
+
+	public void setX(double x) {
+		this.x = x;
+	}
+
+	public double getY() {
+		return y;
+	}
+
+	public void setY(double y) {
+		this.y = y;
 	}
 }
